@@ -1,0 +1,38 @@
+.Rbuildignore
+
+# History files
+.Rhistory
+.Rapp.history
+
+# Example code in package build process
+*-Ex.R
+
+# RStudio files
+.Rproj.user/
+.Rproj.user/*
+
+# RData
+.RData
+
+# produced vignettes
+vignettes/*.html
+vignettes/*.pdf
+
+#*.Rproj
+.Rproj.user
+hdviz.Rcheck/
+hdviz*.tar.gz
+hdviz*.tgz
+docs
+
+tmp
+tmp/*
+
+tests/testthat/tmp
+tests/testthat/tmp/*
+
+.DS_Store
+
+
+
+
