@@ -1,6 +1,6 @@
 Package: hdviz
 Title: Homodatum Viz
-Version: 0.0.2
+Version: 0.0.3
 Authors@R: 
     person(given = "Juan Pablo",
            family = "Marin Diaz",

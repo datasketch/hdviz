@@ -31,5 +31,8 @@ test_that("hdviz works", {
   hdviz_write(hdviz,path)
 
 
+  hdviz(lt, slug = "map1")
+
+
 
 })
