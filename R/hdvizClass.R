@@ -42,13 +42,14 @@ hdvizClass <- R6::R6Class(
       if(self$hdviz_engine == "ggplot"){
         viz_meta <- get_ggplot_meta(viz)
       }
-      if(self$hdviz_engine == "htmlwidgets"){
+      if(self$hdviz_engine == "htmlwidget"){
         viz_meta <- list()
       }
 
       self$name <- name
       self$description <- description
       self$slug <- slug
+      self$viz <- viz
 
       self$meta$title <- meta$title %||% viz_meta$title
       self$meta$subtitle <- meta$subtitle %||% viz_meta$subtitle
@@ -86,8 +87,8 @@ hdvizClass <- R6::R6Class(
         description = self$description,
         slug = self$slug,
         formats = self$formats,
-        width = self$nrow,
-        height = self$ncol,
+        width = self$width,
+        height = self$height,
         credits = self$credits
       )
       c(base_info, self$meta)
@@ -157,7 +158,9 @@ hdvizClass <- R6::R6Class(
       if(!dir.exists(path)) dir.create(path, recursive = TRUE)
       save_path <- file.path(path, paste0(self$slug,".html"))
       #htmlwidgets::saveWidget()
-      save_htmlwidget(viz, save_path, )
+      save_htmlwidget(self$viz, save_path,
+                      viz_width = self$width,
+                      viz_height = self$height)
     },
     write_htmlwidget_png = function(path = "."){
       if(!dir.exists(path)) dir.create(path, recursive = TRUE)
@@ -187,8 +190,10 @@ save_ggplot <- function(viz, viz_path, viz_width = NULL, viz_height = NULL){
 
 save_htmlwidget <- function(viz, save_path, viz_width = NULL, viz_height = NULL){
   filepath <- paste0(dstools::random_name(),".html")
-  htmlwidgets::saveWidget(viz, filepath,
-                          selfcontained = TRUE)
+  str(viz)
+  str(filepath)
+
+  htmlwidgets::saveWidget(viz, filepath, selfcontained = TRUE)
   viz_width <- viz_width %||% 800
   viz_height <- viz_height %||% 800
 

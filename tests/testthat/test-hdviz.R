@@ -27,12 +27,10 @@ test_that("hdviz works", {
   viz <- lt
   hdviz <- hdviz(lt, slug = "map1", width = 2000, height = 2000)
 
-  path <- "tmp/map2"
+  path <- "tmp/map3"
+  #hdviz$write_htmlwidget_html(path)
+
   hdviz_write(hdviz,path)
-
-
-  hdviz(lt, slug = "map1")
-
 
 
 })
