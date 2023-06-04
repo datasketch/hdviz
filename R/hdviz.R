@@ -31,13 +31,14 @@ hdviz <- function(viz,
 
   if(is_hdviz(viz)) return(viz)
 
-  name <- name %||% deparse(substitute(d))
+  name <- name %||% deparse(substitute(viz))
   meta <- c(meta, list(...))
   if(dstools::is.empty(meta)) meta <- NULL
 
   hdvizClass$new(viz,
                  name = name, description = description,
-                 slug = slug, meta = meta, formats = formats)
+                 slug = slug, meta = meta, formats = formats,
+                 width = width, height = height)
 }
 
 

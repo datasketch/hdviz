@@ -26,7 +26,7 @@ hdvizClass <- R6::R6Class(
                           width = NULL, height = NULL,
                           credits = NULL) {
 
-      name <- name %||% deparse(substitute(d))
+      name <- name %||% deparse(substitute(viz))
       description <- description %||% ""
       slug <- slug %||% dstools::create_slug(name)
 
@@ -36,12 +36,14 @@ hdvizClass <- R6::R6Class(
         formats <- unique(c(c('png', 'svg'), formats))
       }
       if(self$hdviz_engine == "htmlwidget"){
-        formats <- unique(c(c('png', 'html'), formats))
+        formats <- unique(c(c("html", "png"), formats))
       }
 
       if(self$hdviz_engine == "ggplot"){
         viz_meta <- get_ggplot_meta(viz)
-
+      }
+      if(self$hdviz_engine == "htmlwidgets"){
+        viz_meta <- list()
       }
 
       self$name <- name
@@ -49,25 +51,25 @@ hdvizClass <- R6::R6Class(
       self$slug <- slug
 
       self$meta$title <- meta$title %||% viz_meta$title
-      self$meta$title <- meta$subtitle %||% viz_meta$subtitle
+      self$meta$subtitle <- meta$subtitle %||% viz_meta$subtitle
       self$meta$caption <- meta$caption %||% viz_meta$caption
       self$meta$x_lab <- meta$caption %||% viz_meta$x_lab
       self$meta$y_lab <- meta$caption %||% viz_meta$y_lab
 
       if(!is.null(data)){
-        self$data <- viz_meta$caption
+        self$data <- viz_meta$data
       }
       # self$hdbase <- hdbase::hdbase(self$data, name = self$name,
       #                       description = self$description,
       #                       slug = paste0(self$slug,"-slug"))
 
-      self$width <- width
-      self$height <- height
+      self$width <- width %||% 800
+      self$height <- height %||% 800
 
       self$hdviz_type <- hdviz_type
 
-      if(!all(formats %in% self$available_write_formats())){
-        stop("Cannot write in the format specified. Formats supported are: ",
+      if(!all(formats %in% self$available_write_formats(self$hdviz_engine))){
+        stop("Formats supported are: ",
              paste(self$available_write_formats(), collpase = ", "))
       }
       self$formats <- formats
@@ -98,21 +100,20 @@ hdvizClass <- R6::R6Class(
       jsonlite::write_json(metadata, save_path,
                            auto_unbox = TRUE, pretty = TRUE)
     },
-    available_write_formats = function(hdviz_engine = NULL){
+    available_write_formats = function(hdviz_engine){
       nms <- names(self)
       nms <- nms[nms != "write_meta_json"]
 
       ggplot_funs <- nms[grepl("^write_ggplot_", nms)]
       ggplot_funs <- gsub("write_ggplot_","", ggplot_funs)
 
-      htmlwidget_funs <- nms[grepl("^write_htmlwidget", nms)]
+      htmlwidget_funs <- nms[grepl("^write_htmlwidget_", nms)]
       htmlwidget_funs <- gsub("write_htmlwidget_","", htmlwidget_funs)
 
       if(self$hdviz_engine == "ggplot")
         return(ggplot_funs)
       if(self$hdviz_engine == "htmlwidget")
         return(htmlwidget_funs)
-      NULL
     },
     write_rds = function(path = ""){
       save_path <- file.path(path,paste0(self$slug,".rds"))
@@ -128,33 +129,45 @@ hdvizClass <- R6::R6Class(
       # Write formats
       purrr::walk(self$formats, function(format){
         fun <- paste0("write_",self$hdviz_engine,"_",format)
-        message("Writing format:", format, fun)
-        self[[paste0("write_",self$hdviz_engine, "_", format)]](path)
+        #message("Writing format:", format, fun)
+        self[[fun]](path)
       })
     },
-    write_ggplot_png = function(path = ""){
+    write_ggplot_png = function(path = "."){
       if(!dir.exists(path)) dir.create(path, recursive = TRUE)
       save_path <- file.path(path, paste0(self$slug,".png"))
-      ggsave(save_path)
+      save_ggplot(self$viz, save_path)
     },
-    write_ggplot_jpeg = function(path = ""){
+    write_ggplot_jpeg = function(path = "."){
       if(!dir.exists(path)) dir.create(path, recursive = TRUE)
       save_path <- file.path(path, paste0(self$slug,".jpeg"))
-      ggsave(save_path)
+      save_ggplot(self$viz, save_path)
     },
-    write_ggplot_svg = function(path = ""){
+    write_ggplot_svg = function(path = "."){
       if(!dir.exists(path)) dir.create(path, recursive = TRUE)
       save_path <- file.path(path, paste0(self$slug,".svg"))
-      ggsave(save_path)
+      save_ggplot(self$viz, save_path)
     },
-    write_ggplot_pdf = function(path = ""){
+    write_ggplot_pdf = function(path = "."){
       if(!dir.exists(path)) dir.create(path, recursive = TRUE)
       save_path <- file.path(path, paste0(self$slug,".pdf"))
-      ggsave(save_path)
+      save_ggplot(self$viz, save_path)
     },
-    write_html = function(path = ""){
+    write_htmlwidget_html = function(path = "."){
       if(!dir.exists(path)) dir.create(path, recursive = TRUE)
       save_path <- file.path(path, paste0(self$slug,".html"))
+      #htmlwidgets::saveWidget()
+      save_htmlwidget(viz, save_path, )
+    },
+    write_htmlwidget_png = function(path = "."){
+      if(!dir.exists(path)) dir.create(path, recursive = TRUE)
+      save_path_html <- file.path(path, paste0(self$slug,".html"))
+      save_path_png <- file.path(path, paste0(self$slug,".png"))
+      x <- webshot2::webshot(save_path_html, vwidth = self$width,
+                             vheight = self$height,
+                             cliprect = "viewport",
+                             delay = 0.3)
+      file.rename(as.character(x), save_path_png)
     }
   ),
   active = list(
@@ -162,42 +175,26 @@ hdvizClass <- R6::R6Class(
 )
 
 
-
-
-
-
-save_local <- function(type, viz, viz_path, path, viz_height, viz_width){
-  switch(type,
-         "gg" = save_ggplot(viz = viz, viz_path = viz_path,
-                        viz_height = viz_height,
-                        viz_width = viz_width),
-         "htmlwidget" = save_htmlwidget(viz = viz,
-                                        viz_path = viz_path,
-                                        viz_height = viz_height,
-                                        viz_width = viz_width,
-                                        path = path))
-}
-
-save_ggplot <- function(viz, viz_path, viz_height, viz_width){
-  ext <- turn::which_ext(viz_path)
+save_ggplot <- function(viz, viz_path, viz_width = NULL, viz_height = NULL){
+  ext <- which_ext(viz_path)
   ggplot2::ggsave(viz_path, plot = viz,
-                  width = viz_width/100, height = viz_height/100,
-                  units = "in", dpi = 300,
-                  device = ext)
+                  width = viz_width, height = viz_height,
+                  units = "cm", dpi = 300,
+                  device = ext,
+                  bg = NULL)
 }
 
 
-save_htmlwidget <- function(viz, viz_path, viz_height, viz_width, path){
-  filepath <- paste0(random_name(),".html")
+save_htmlwidget <- function(viz, save_path, viz_width = NULL, viz_height = NULL){
+  filepath <- paste0(dstools::random_name(),".html")
   htmlwidgets::saveWidget(viz, filepath,
                           selfcontained = TRUE)
-  dir.create(path, recursive = TRUE)
-  file.copy(filepath, paste0(viz_path,".html"))
-  # if (!webshot2::is_phantomjs_installed())
-  #   webshot2::install_phantomjs()
-  # webshot2::webshot(paste0(viz_path,".html"), paste0(viz_path,".png"),
-  #                   vheight = viz_height, delay = 0.2)
-  # file.remove(filepath)
+  viz_width <- viz_width %||% 800
+  viz_height <- viz_height %||% 800
+
+  dir.create(dirname(save_path), recursive = TRUE, showWarnings = FALSE)
+  file.rename(filepath, save_path)
+
 }
 
 
