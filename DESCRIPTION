@@ -1,5 +1,5 @@
-Package: hdtable
-Title: Homodatum Table
+Package: hdviz
+Title: Homodatum Viz
 Version: 0.0.2
 Authors@R: 
     person(given = "Juan Pablo",
@@ -23,7 +23,7 @@ Imports:
     purrr,
     ggplot2
 Remotes:
-    datasketch/hdtable (>= 0.),
+    datasketch/hdtable,
     datasketch/hdbase
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.2.3

@@ -8,6 +8,9 @@ test_that("hdviz works", {
 
   expect_true(is_hdviz(hv))
 
+  h2 <- hdviz(hv)
+  expect_equal(hv, h2)
+
   hv <- hdviz_update_meta(hv, name = "CHART")
   expect_equal(hv$name, "CHART")
 

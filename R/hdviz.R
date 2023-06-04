@@ -29,7 +29,7 @@ hdviz <- function(viz,
                   formats = NULL,
                   ...){
 
-  if(is_hdviz(d)) return(d)
+  if(is_hdviz(viz)) return(viz)
 
   name <- name %||% deparse(substitute(d))
   meta <- c(meta, list(...))
