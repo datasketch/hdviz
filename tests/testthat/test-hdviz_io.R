@@ -6,6 +6,8 @@ test_that("hdviz io works", {
 
   hv <- hdvizClass$new(gg, name = "Chart")
 
+  path <- "tmp/chart"
+  hv$write_ggplot_png(path)
   hdviz_write(hv, "tmp")
 
   expected_write_ext <- c(".meta.json",".png", ".rds", ".svg")

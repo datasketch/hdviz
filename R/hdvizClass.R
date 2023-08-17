@@ -130,7 +130,7 @@ hdvizClass <- R6::R6Class(
       # Write formats
       purrr::walk(self$formats, function(format){
         fun <- paste0("write_",self$hdviz_engine,"_",format)
-        #message("Writing format:", format, fun)
+        message("Writing format:", format, fun)
         self[[fun]](path)
       })
     },
@@ -180,6 +180,8 @@ hdvizClass <- R6::R6Class(
 
 save_ggplot <- function(viz, viz_path, viz_width = NULL, viz_height = NULL){
   ext <- which_ext(viz_path)
+  viz_width <- viz_width %||% 10
+  viz_height <- viz_height %||% 7.5
   ggplot2::ggsave(viz_path, plot = viz,
                   width = viz_width, height = viz_height,
                   units = "cm", dpi = 300,
