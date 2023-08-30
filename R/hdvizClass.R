@@ -28,7 +28,7 @@ hdvizClass <- R6::R6Class(
 
       name <- name %||% deparse(substitute(viz))
       description <- description %||% ""
-      slug <- slug %||% dstools::create_slug(name)
+      slug <- slug %||% dstools::create_slug(name, append_random = TRUE)
 
       self$hdviz_engine <- hdviz_engine(viz)
 

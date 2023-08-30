@@ -11,7 +11,8 @@ test_that("hdviz io works", {
   hdviz_write(hv, "tmp")
 
   expected_write_ext <- c(".meta.json",".png", ".rds", ".svg")
-  expect_equal(list.files("tmp/chart"),
+  expect_equal(list.files(file.path("tmp",hv$slug)),
                paste0(hv$slug, expected_write_ext))
+  unlink(file.path("tmp",hv$slug), recursive = TRUE)
 
 })
