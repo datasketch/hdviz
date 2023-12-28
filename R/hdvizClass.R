@@ -24,11 +24,13 @@ hdvizClass <- R6::R6Class(
                           formats =  NULL,
                           data = NULL,
                           width = NULL, height = NULL,
-                          credits = NULL) {
+                          credits = NULL,
+                          slug_append_random = FALSE) {
 
       name <- name %||% deparse(substitute(viz))
       description <- description %||% ""
-      slug <- slug %||% dstools::create_slug(name, append_random = TRUE)
+      slug <- slug %||%
+        dstools::create_slug(name, append_random = slug_append_random)
 
       self$hdviz_engine <- hdviz_engine(viz)
 

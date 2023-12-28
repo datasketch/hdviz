@@ -27,6 +27,7 @@ hdviz <- function(viz,
                   width = NULL,
                   height = NULL,
                   formats = NULL,
+                  slug_append_random = FALSE,
                   ...){
 
   if(is_hdviz(viz)) return(viz)
@@ -38,7 +39,8 @@ hdviz <- function(viz,
   hdvizClass$new(viz,
                  name = name, description = description,
                  slug = slug, meta = meta, formats = formats,
-                 width = width, height = height)
+                 width = width, height = height,
+                 slug_append_random = slug_append_random)
 }
 
 
